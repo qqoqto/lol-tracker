@@ -44,12 +44,24 @@ export default function Home() {
     e.preventDefault();
     setError('');
 
-    if (!gameName.trim()) {
+    let searchGameName = gameName.trim();
+    let searchTagLine = tagLine.trim();
+
+    // 如果使用者在 gameName 中輸入了 #，自動分割
+    if (searchGameName.includes('#')) {
+      const parts = searchGameName.split('#');
+      searchGameName = parts[0].trim();
+      if (parts[1]) {
+        searchTagLine = parts[1].trim().toLowerCase();
+      }
+    }
+
+    if (!searchGameName) {
       setError('請輸入召喚師名稱');
       return;
     }
 
-    if (!tagLine.trim()) {
+    if (!searchTagLine) {
       setError('請輸入或選擇 Tag Line');
       return;
     }
@@ -58,7 +70,7 @@ export default function Home() {
 
     try {
       const response = await fetch(
-        `/api/summoner?gameName=${encodeURIComponent(gameName)}&tagLine=${encodeURIComponent(tagLine)}&region=${encodeURIComponent(selectedRegion)}`
+        `/api/summoner?gameName=${encodeURIComponent(searchGameName)}&tagLine=${encodeURIComponent(searchTagLine)}&region=${encodeURIComponent(selectedRegion)}`
       );
 
       if (!response.ok) {
@@ -67,7 +79,7 @@ export default function Home() {
       }
 
       // 成功後導向到召喚師頁面
-      router.push(`/summoner/${gameName}-${tagLine}`);
+      router.push(`/summoner/${searchGameName}-${searchTagLine}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : '發生未知錯誤');
     } finally {
