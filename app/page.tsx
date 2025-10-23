@@ -76,111 +76,83 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+    <div className="min-h-screen bg-[#1a1d29]">
       <div className="flex min-h-screen flex-col items-center justify-center px-4">
-        <div className="w-full max-w-2xl text-center">
-          {/* 標題 */}
-          <h1 className="mb-4 text-5xl font-bold text-white">
-            LOL 戰績查詢
-          </h1>
-          <p className="mb-12 text-lg text-gray-300">
-            即時查詢英雄聯盟召喚師戰績、排位資訊與對戰記錄
-          </p>
+        <div className="w-full max-w-4xl">
+          {/* Logo/標題 */}
+          <div className="mb-12 text-center">
+            <h1 className="mb-2 text-6xl font-bold text-white">
+              LOL<span className="text-blue-500">.GG</span>
+            </h1>
+            <p className="text-gray-400">
+              英雄聯盟召喚師戰績查詢
+            </p>
+          </div>
 
-          {/* 搜尋表單 */}
-          <form onSubmit={handleSearch} className="mb-6">
-            <div className="flex flex-col gap-4">
-              {/* 第一排：召喚師名稱 */}
-              <div className="flex flex-col gap-2">
-                <label className="text-left text-sm font-semibold text-gray-300">
-                  召喚師名稱 (Summoner Name)
-                </label>
+          {/* 搜尋列 */}
+          <form onSubmit={handleSearch}>
+            <div className="flex items-center gap-0 rounded-full bg-[#2a2d3a] p-2 shadow-2xl">
+              {/* Region 下拉選單 */}
+              <div className="relative">
+                <div className="px-4 py-2">
+                  <div className="mb-1 text-xs font-semibold text-gray-400">Region</div>
+                  <select
+                    value={selectedRegion}
+                    onChange={(e) => handleRegionChange(e.target.value)}
+                    className="cursor-pointer appearance-none bg-transparent pr-8 text-base text-gray-300 outline-none"
+                    disabled={loading}
+                  >
+                    {REGIONS.map((region) => (
+                      <option key={region.value} value={region.value} className="bg-[#2a2d3a]">
+                        {region.label.split(' ')[0]}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute right-4 top-1/2 mt-1 text-gray-500">▼</div>
+                </div>
+              </div>
+
+              {/* 分隔線 */}
+              <div className="h-12 w-px bg-gray-700"></div>
+
+              {/* 搜尋輸入框 */}
+              <div className="flex-1 px-6 py-2">
+                <div className="mb-1 text-xs font-semibold text-gray-400">Search</div>
                 <input
                   type="text"
                   value={gameName}
                   onChange={(e) => setGameName(e.target.value)}
-                  placeholder="例如：Hide on bush"
-                  className="h-14 w-full rounded-lg border-2 border-transparent bg-white px-6 text-lg text-gray-900 placeholder-gray-400 outline-none transition-all focus:border-blue-500"
+                  placeholder={`Game name + #${tagLine.toUpperCase()}`}
+                  className="w-full bg-transparent text-base text-gray-300 placeholder-gray-600 outline-none"
                   disabled={loading}
                 />
               </div>
 
-              {/* 第二排：地區和 Tag Line */}
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {/* 地區選擇 */}
-                <div className="flex flex-col gap-2">
-                  <label className="text-left text-sm font-semibold text-gray-300">
-                    地區 (Region)
-                  </label>
-                  <select
-                    value={selectedRegion}
-                    onChange={(e) => handleRegionChange(e.target.value)}
-                    className="h-14 w-full rounded-lg border-2 border-transparent bg-white px-6 text-lg text-gray-900 outline-none transition-all focus:border-blue-500"
-                    disabled={loading}
-                  >
-                    {REGIONS.map((region) => (
-                      <option key={region.value} value={region.value}>
-                        {region.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Tag Line */}
-                <div className="flex flex-col gap-2">
-                  <label className="text-left text-sm font-semibold text-gray-300">
-                    Tag Line
-                  </label>
-                  <input
-                    type="text"
-                    value={tagLine}
-                    onChange={(e) => setTagLine(e.target.value.toLowerCase())}
-                    placeholder="例如：kr1"
-                    className="h-14 w-full rounded-lg border-2 border-transparent bg-white px-6 text-lg text-gray-900 placeholder-gray-400 outline-none transition-all focus:border-blue-500"
-                    disabled={loading}
-                  />
-                </div>
-              </div>
-
-              {/* 搜尋按鈕 */}
+              {/* .GG 按鈕 */}
               <button
                 type="submit"
                 disabled={loading}
-                className="h-14 rounded-lg bg-blue-600 text-lg font-semibold text-white transition-all hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="mr-1 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-xl font-bold text-white transition-all hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {loading ? '搜尋中...' : '🔍 搜尋召喚師'}
+                {loading ? (
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                ) : (
+                  '.GG'
+                )}
               </button>
             </div>
 
             {/* 錯誤訊息 */}
             {error && (
-              <div className="mt-4 rounded-lg bg-red-500/20 p-4 text-red-200">
+              <div className="mt-4 rounded-lg bg-red-500/20 p-4 text-center text-red-200">
                 {error}
               </div>
             )}
           </form>
 
-          {/* 使用說明 */}
-          <div className="rounded-lg bg-white/10 p-6 text-left text-gray-300 backdrop-blur-sm">
-            <h3 className="mb-3 font-semibold text-white">💡 使用說明</h3>
-            <ul className="space-y-2 text-sm">
-              <li>• 選擇你的遊戲地區，Tag Line 會自動填入</li>
-              <li>• 也可以手動修改 Tag Line（例如：特殊帳號標籤）</li>
-              <li>• 支援查詢所有地區的召喚師資料</li>
-              <li>• 查詢內容包含：排位資訊、對戰記錄、統計圖表等</li>
-            </ul>
-          </div>
-
-          {/* 範例 */}
-          <div className="mt-6 grid grid-cols-1 gap-3 text-sm text-gray-300 sm:grid-cols-2">
-            <div className="rounded-lg bg-white/5 p-3">
-              <div className="font-semibold text-white">台服範例：</div>
-              <div>陳大牌 → TW2</div>
-            </div>
-            <div className="rounded-lg bg-white/5 p-3">
-              <div className="font-semibold text-white">韓服範例：</div>
-              <div>Hide on bush → KR</div>
-            </div>
+          {/* 使用提示 */}
+          <div className="mt-8 text-center text-sm text-gray-500">
+            例如：Hide on bush #KR1 或 陳大牌 #TW2
           </div>
         </div>
       </div>
