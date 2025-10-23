@@ -82,9 +82,10 @@ export default function LPChart({ data }: LPChartProps) {
             stroke="#3B82F6"
             strokeWidth={2}
             dot={(props: any) => {
-              const { cx, cy, payload } = props;
+              const { cx, cy, payload, index } = props;
               return (
                 <circle
+                  key={`dot-${index}`}
                   cx={cx}
                   cy={cy}
                   r={4}
