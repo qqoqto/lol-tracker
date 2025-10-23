@@ -23,13 +23,77 @@ const REGIONS = [
   { value: 'vn2', label: '越南 (VN)', tagLine: 'VN2' },
 ];
 
+interface SearchHistory {
+  gameName: string;
+  tagLine: string;
+  region: string;
+  timestamp: number;
+}
+
 export default function Home() {
   const [gameName, setGameName] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('tw2');
   const [tagLine, setTagLine] = useState('tw2');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [suggestions, setSuggestions] = useState<SearchHistory[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const router = useRouter();
+
+  // 載入搜尋歷史
+  const loadSearchHistory = (): SearchHistory[] => {
+    if (typeof window === 'undefined') return [];
+    const history = localStorage.getItem('searchHistory');
+    return history ? JSON.parse(history) : [];
+  };
+
+  // 儲存搜尋歷史
+  const saveSearchHistory = (gameName: string, tagLine: string, region: string) => {
+    if (typeof window === 'undefined') return;
+
+    const history = loadSearchHistory();
+    const newEntry: SearchHistory = {
+      gameName,
+      tagLine,
+      region,
+      timestamp: Date.now(),
+    };
+
+    // 移除重複的項目
+    const filtered = history.filter(
+      item => !(item.gameName.toLowerCase() === gameName.toLowerCase() &&
+                item.tagLine.toLowerCase() === tagLine.toLowerCase())
+    );
+
+    // 添加到開頭，只保留最近 20 筆
+    const updated = [newEntry, ...filtered].slice(0, 20);
+    localStorage.setItem('searchHistory', JSON.stringify(updated));
+  };
+
+  // 當使用者輸入時，顯示匹配的建議
+  const handleGameNameChange = (value: string) => {
+    setGameName(value);
+
+    if (value.trim().length > 0) {
+      const history = loadSearchHistory();
+      const matches = history.filter(item =>
+        item.gameName.toLowerCase().includes(value.toLowerCase())
+      );
+      setSuggestions(matches);
+      setShowSuggestions(matches.length > 0);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  // 選擇建議項目
+  const selectSuggestion = (suggestion: SearchHistory) => {
+    setGameName(suggestion.gameName);
+    setTagLine(suggestion.tagLine);
+    setSelectedRegion(suggestion.region);
+    setShowSuggestions(false);
+  };
 
   // 當地區改變時，自動更新 tagLine
   const handleRegionChange = (region: string) => {
@@ -77,6 +141,9 @@ export default function Home() {
         const data = await response.json();
         throw new Error(data.error || '查詢失敗');
       }
+
+      // 儲存搜尋歷史
+      saveSearchHistory(searchGameName, searchTagLine, selectedRegion);
 
       // 成功後導向到召喚師頁面
       router.push(`/summoner/${searchGameName}-${searchTagLine}`);
@@ -128,16 +195,59 @@ export default function Home() {
               <div className="h-12 w-px bg-gray-700"></div>
 
               {/* 搜尋輸入框 */}
-              <div className="flex-1 px-6 py-2">
+              <div className="relative flex-1 px-6 py-2">
                 <div className="mb-1 text-xs font-semibold text-gray-400">Search</div>
                 <input
                   type="text"
                   value={gameName}
-                  onChange={(e) => setGameName(e.target.value)}
+                  onChange={(e) => handleGameNameChange(e.target.value)}
+                  onFocus={() => {
+                    if (gameName.trim().length > 0) {
+                      const history = loadSearchHistory();
+                      const matches = history.filter(item =>
+                        item.gameName.toLowerCase().includes(gameName.toLowerCase())
+                      );
+                      if (matches.length > 0) {
+                        setSuggestions(matches);
+                        setShowSuggestions(true);
+                      }
+                    }
+                  }}
+                  onBlur={() => {
+                    // 延遲關閉，讓點擊建議有時間執行
+                    setTimeout(() => setShowSuggestions(false), 200);
+                  }}
                   placeholder={`Game name + #${tagLine.toUpperCase()}`}
                   className="w-full bg-transparent text-base text-gray-300 placeholder-gray-600 outline-none"
                   disabled={loading}
                 />
+
+                {/* 搜尋建議下拉列表 */}
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute left-0 top-full z-50 mt-2 w-full rounded-lg bg-[#2a2d3a] shadow-2xl border border-gray-700">
+                    {suggestions.map((suggestion, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        onClick={() => selectSuggestion(suggestion)}
+                        className="flex w-full items-center justify-between px-6 py-3 text-left hover:bg-[#3a3d4a] transition-colors first:rounded-t-lg last:rounded-b-lg"
+                      >
+                        <div>
+                          <div className="text-white font-medium">
+                            {suggestion.gameName}
+                            <span className="text-gray-500"> #{suggestion.tagLine.toUpperCase()}</span>
+                          </div>
+                          <div className="text-xs text-gray-500 mt-0.5">
+                            {REGIONS.find(r => r.value === suggestion.region)?.label || suggestion.region}
+                          </div>
+                        </div>
+                        <div className="text-gray-600 text-xs">
+                          最近搜尋
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* .GG 按鈕 */}
