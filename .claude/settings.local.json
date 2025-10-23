@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:developer.riotgames.com)",
+      "Bash(curl:*)",
+      "Bash(node test-match.js:*)",
+      "Bash(node test-queue.js:*)",
+      "Bash(node test-match-detail.js:*)",
+      "WebFetch(domain:static.developer.riotgames.com)",
+      "WebFetch(domain:www.deeplol.gg)",
+      "Bash(npm install:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(if exist nul del /f nul)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
