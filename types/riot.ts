@@ -120,4 +120,4 @@ export const REGIONAL_ROUTING = {
 } as const;
 
 export type Region = keyof typeof REGIONS;
-export type RegionalRoute = typeof REGIONAL_ROUTING[Region];
+export type RegionalRoute = typeof REGIONAL_ROUTING[Region] | 'sea'; // 新增 sea 給 Match API 使用
